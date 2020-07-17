@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sample", "Sample\Sample.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PriorityBooster", "PriorityBooster\PriorityBooster.vcxproj", "{D6D9176B-7215-41B4-857D-A80B2D57B32A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Booster", "Booster\Booster.vcxproj", "{559553AD-9B04-41EE-B9FF-3C63909C26D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -67,6 +69,18 @@ Global
 		{D6D9176B-7215-41B4-857D-A80B2D57B32A}.Release|x86.ActiveCfg = Release|Win32
 		{D6D9176B-7215-41B4-857D-A80B2D57B32A}.Release|x86.Build.0 = Release|Win32
 		{D6D9176B-7215-41B4-857D-A80B2D57B32A}.Release|x86.Deploy.0 = Release|Win32
+		{559553AD-9B04-41EE-B9FF-3C63909C26D0}.Debug|ARM.ActiveCfg = Debug|Win32
+		{559553AD-9B04-41EE-B9FF-3C63909C26D0}.Debug|ARM64.ActiveCfg = Debug|Win32
+		{559553AD-9B04-41EE-B9FF-3C63909C26D0}.Debug|x64.ActiveCfg = Debug|x64
+		{559553AD-9B04-41EE-B9FF-3C63909C26D0}.Debug|x64.Build.0 = Debug|x64
+		{559553AD-9B04-41EE-B9FF-3C63909C26D0}.Debug|x86.ActiveCfg = Debug|Win32
+		{559553AD-9B04-41EE-B9FF-3C63909C26D0}.Debug|x86.Build.0 = Debug|Win32
+		{559553AD-9B04-41EE-B9FF-3C63909C26D0}.Release|ARM.ActiveCfg = Release|Win32
+		{559553AD-9B04-41EE-B9FF-3C63909C26D0}.Release|ARM64.ActiveCfg = Release|Win32
+		{559553AD-9B04-41EE-B9FF-3C63909C26D0}.Release|x64.ActiveCfg = Release|x64
+		{559553AD-9B04-41EE-B9FF-3C63909C26D0}.Release|x64.Build.0 = Release|x64
+		{559553AD-9B04-41EE-B9FF-3C63909C26D0}.Release|x86.ActiveCfg = Release|Win32
+		{559553AD-9B04-41EE-B9FF-3C63909C26D0}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
