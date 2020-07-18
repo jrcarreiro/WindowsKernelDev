@@ -61,3 +61,22 @@ NTSTATUS PriorityBoosterCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp)
     IoCompleteRequest(Irp, IO_NO_INCREMENT);
     return STATUS_SUCCESS;
 }
+
+_Use_decl_annotations_
+NTSTATUS PriorityBoosterDeviceControl(PDEVICE_OBJECT, PIRP Irp)
+{
+    // get our IO_STACK_LOCATION
+    auto stack = IoGetCurrentIrpStackLocation(Irp); // io_stack_location*
+    auto status = STATUS_SUCCESS;
+
+    switch (stack -> Parameters.DeviceIoControl.IoControlCode)
+    {
+    case IOCTL_PRIORITY_BOOSTER_SET_PRIORITY:
+    // do the work
+    break;
+
+    default:
+	   status = STATUS_INVALID_DEVICE_REQUEST;
+	   break;
+    }
+}
