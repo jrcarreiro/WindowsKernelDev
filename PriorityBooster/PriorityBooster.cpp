@@ -1,5 +1,5 @@
-#include <ntddk.h>
 #include <ntifs.h>
+#include <ntddk.h>
 #include "PriorityBoosterCommon.h"
 
 // prototypes
@@ -11,110 +11,105 @@ NTSTATUS PriorityBoosterDeviceControl(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIR
 // DriverEntry
 
 extern "C" NTSTATUS
-DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
-{
-    UNREFERENCED_PARAMETER(RegistryPath);
+DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath) {
+	UNREFERENCED_PARAMETER(RegistryPath);
 
-    DriverObject->DriverUnload = PriorityBoosterUnload;
+	KdPrint(("PriorityBooster DriverEntry started\n"));
 
-    DriverObject->MajorFunction[IRP_MJ_CREATE] = PriorityBoosterCreateClose;
-    DriverObject->MajorFunction[IRP_MJ_CLOSE] = PriorityBoosterCreateClose;
-    DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = PriorityBoosterDeviceControl;
+	DriverObject->DriverUnload = PriorityBoosterUnload;
 
-    UNICODE_STRING devName = RTL_CONSTANT_STRING(L"\\Device\\PriorityBooster");
-    // RtlInitUnicodeString(&devName, L"\\Device\ThreadBoost");
+	DriverObject->MajorFunction[IRP_MJ_CREATE] = PriorityBoosterCreateClose;
+	DriverObject->MajorFunction[IRP_MJ_CLOSE] = PriorityBoosterCreateClose;
+	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = PriorityBoosterDeviceControl;
 
-    PDEVICE_OBJECT DeviceObject;
-    NTSTATUS status = IoCreateDevice(DriverObject, 0, &devName, FILE_DEVICE_UNKNOWN, 0, FALSE, &DeviceObject);
-    if (!NT_SUCCESS(status))
-    {
-	   KdPrint(("Failed to create device object (0x%08X)\n", status));
-	   return status;
-    }
+	UNICODE_STRING devName = RTL_CONSTANT_STRING(L"\\Device\\PriorityBooster");
+	//RtlInitUnicodeString(&devName, L"\\Device\\ThreadBoost");
+	PDEVICE_OBJECT DeviceObject;
+	NTSTATUS status = IoCreateDevice(DriverObject, 0, &devName, FILE_DEVICE_UNKNOWN, 0, FALSE, &DeviceObject);
+	if (!NT_SUCCESS(status)) {
+		KdPrint(("Failed to create device (0x%08X)\n", status));
+		return status;
+	}
 
-    UNICODE_STRING symLink = RTL_CONSTANT_STRING(L"\\??\\PriorityBooster");
-    status = IoCreateSymbolicLink(&symLink, &devName);
-    if (!NT_SUCCESS(status))
-    {
-	   KdPrint(("Failed to create symbolic link (x%08X)\n", status));
-	   IoDeleteDevice(DeviceObject);
-	   return status;
-    }
+	UNICODE_STRING symLink = RTL_CONSTANT_STRING(L"\\??\\PriorityBooster");
+	status = IoCreateSymbolicLink(&symLink, &devName);
+	if (!NT_SUCCESS(status)) {
+		KdPrint(("Failed to create symbolic link (0x%08X)\n", status));
+		IoDeleteDevice(DeviceObject);
+		return status;
+	}
 
-    return STATUS_SUCCESS;
+	KdPrint(("PriorityBooster DriverEntry completed successfully\n"));
+
+	return STATUS_SUCCESS;
 }
 
-void PriorityBoosterUnload(_In_ PDRIVER_OBJECT DriverObject)
-{
-    UNICODE_STRING symLink = RTL_CONSTANT_STRING(L"\\??\\PriorityBooster");
-    // delete symbolik link
-    IoDeleteSymbolicLink(&symLink);
+void PriorityBoosterUnload(_In_ PDRIVER_OBJECT DriverObject) {
+	UNICODE_STRING symLink = RTL_CONSTANT_STRING(L"\\??\\PriorityBooster");
+	// delete symbolic link
+	IoDeleteSymbolicLink(&symLink);
 
-    // delete device object
-    IoDeleteDevice(DriverObject->DeviceObject);
-}
+	// delete device object
+	IoDeleteDevice(DriverObject->DeviceObject);
 
-_Use_decl_annotations_
-NTSTATUS PriorityBoosterCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp)
-{
-    UNREFERENCED_PARAMETER(DeviceObject);
-
-    Irp->IoStatus.Status = STATUS_SUCCESS;
-    Irp->IoStatus.Information = 0;
-    IoCompleteRequest(Irp, IO_NO_INCREMENT);
-    return STATUS_SUCCESS;
+	KdPrint(("PriorityBooster unloaded\n"));
 }
 
 _Use_decl_annotations_
-NTSTATUS PriorityBoosterDeviceControl(PDEVICE_OBJECT, PIRP Irp)
-{
-    // get our IO_STACK_LOCATION
-    auto stack = IoGetCurrentIrpStackLocation(Irp); // io_stack_location*
-    auto status = STATUS_SUCCESS;
+NTSTATUS PriorityBoosterCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+	UNREFERENCED_PARAMETER(DeviceObject);
 
-    switch (stack -> Parameters.DeviceIoControl.IoControlCode)
-    {
-    case IOCTL_PRIORITY_BOOSTER_SET_PRIORITY:
-    {
-	   // do the work
-	   auto len = stack->Parameters.DeviceIoControl.InputBufferLength;
-	   if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ThreadData))
-	   {
-		  status = STATUS_BUFFER_TOO_SMALL;
-		  break;
-	   }
+	Irp->IoStatus.Status = STATUS_SUCCESS;
+	Irp->IoStatus.Information = 0;
+	IoCompleteRequest(Irp, IO_NO_INCREMENT);
+	return STATUS_SUCCESS;
+}
 
-	   auto data = (ThreadData*)stack->Parameters.DeviceIoControl.Type3InputBuffer;
-	   if (data == nullptr)
-	   {
-		  status = STATUS_INVALID_PARAMETER;
-		  break;
-	   }
+_Use_decl_annotations_
+NTSTATUS PriorityBoosterDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
+	// get our IO_STACK_LOCATION
+	auto stack = IoGetCurrentIrpStackLocation(Irp);
+	auto status = STATUS_SUCCESS;
 
-	   if (data->Priority < 1 || data->Priority >31)
-	   {
-		  status = STATUS_INVALID_PARAMETER;
-		  break;
-	   }
+	switch (stack->Parameters.DeviceIoControl.IoControlCode) {
+		case IOCTL_PRIORITY_BOOSTER_SET_PRIORITY:
+		{
+			// do the work
+			if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ThreadData)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
 
-	   PETHREAD Thread;
-	   status = PsLookupThreadByThreadId(ULongToHandle(data->ThreadId), &Thread);
-	   if (!NT_SUCCESS(status))
-		  break;
+			auto data = (ThreadData*)stack->Parameters.DeviceIoControl.Type3InputBuffer;
+			if (data == nullptr) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
 
-	   KeSetBasePriorityThread((PKTHREAD)Thread, data->Priority);
-	   ObDereferenceObject(Thread);
-	   KdPrint(("Thread Priority change for %d to %d succeded!\n", data->ThreadId, data->Priority));
-	   break;
-    }
+			if (data->Priority < 1 || data->Priority > 31) {
+				status = STATUS_INVALID_PARAMETER;
+				break;
+			}
 
-    default:
-	   status = STATUS_INVALID_DEVICE_REQUEST;
-	   break;
-    }
+			PETHREAD Thread;
+			status = PsLookupThreadByThreadId(ULongToHandle(data->ThreadId), &Thread);
+			if (!NT_SUCCESS(status))
+				break;
 
-    Irp->IoStatus.Status = status;
-    Irp->IoStatus.Information = 0;
-    IoCompleteRequest(Irp, IO_NO_INCREMENT);
-    return status;
+			KeSetPriorityThread((PKTHREAD)Thread, data->Priority);
+			ObDereferenceObject(Thread);
+			KdPrint(("Thread Priority change for %d to %d succeeded!\n",
+				data->ThreadId, data->Priority));
+			break;
+		}
+
+		default:
+			status = STATUS_INVALID_DEVICE_REQUEST;
+			break;
+	}
+
+	Irp->IoStatus.Status = status;
+	Irp->IoStatus.Information = 0;
+	IoCompleteRequest(Irp, IO_NO_INCREMENT);
+	return status;
 }

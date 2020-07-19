@@ -6,7 +6,7 @@
 int Error(const char* message)
 {
     printf("%s (error=%d)\n", message, GetLastError());
-    retun 1;
+    return 1;
 }
 
 int main(int argc, const char* argv[])
